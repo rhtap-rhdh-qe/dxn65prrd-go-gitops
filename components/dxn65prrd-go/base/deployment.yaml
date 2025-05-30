@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:  
+    tad.gitops.set/image: ".spec.template.spec.containers[0].image"
+    tad.gitops.get/image: ".spec.template.spec.containers[0].image"
+    tad.gitops.set/replicas: ".spec.replicas"
+    tad.gitops.get/replicas: ".spec.replicas" 
+  labels: 
+    app.kubernetes.io/instance: dxn65prrd-go
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name:  dxn65prrd-go
+    app.kubernetes.io/part-of: dxn65prrd-go-gitops  
+  name: dxn65prrd-go
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance:  dxn65prrd-go 
+  template:
+    metadata: 
+      labels:
+        app.kubernetes.io/instance:  dxn65prrd-go
+    spec:
+      containers:
+      - image: quay.io/redhat-appstudio/dance-bootstrap-app:latest
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8081 
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        name: container-image
+        ports:
+        - containerPort: 8081 
+        readinessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          tcpSocket:
+            port: 8081 
+        resources:
+          limits:
+            cpu: "1"
+            memory: 512Mi
+          requests:
+            cpu: 10m
+            memory: 50Mi    
+        env:
+        - name: GIT_REPO
+          value: https://github.com/rhtap-rhdh-qe/dxn65prrd-go-gitops
+      imagePullSecrets:
+        - name: tssc-image-registry-auth
